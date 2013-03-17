@@ -45,15 +45,13 @@ class JsonClient
 	{
 		$this->url = $url . '/' . $service . '/';
 		$this->useragent = $useragent;
-		$this->curl_settings = array_merge(
+		$this->curl_settings = $curl_settings + 
 			array(
 				CURLOPT_USERAGENT => $this->useragent,
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_SSL_VERIFYPEER => true,
 				CURLOPT_CAINFO => __DIR__."/TERENA_SSL_CA.pem",
-			),
-			$curl_settings
-		);
+			);
 	}
 	
 	/**
@@ -74,7 +72,7 @@ class JsonClient
 		}
 		
 		// Réglages de cURL
-		$settings = array_merge(array(), $this->curl_settings); // copy to get clean cURL settings
+		$settings = $this->curl_settings;
 		$settings[CURLOPT_CUSTOMREQUEST] = $method;
 		
 		// Construction de l'URL et des postfields
@@ -94,7 +92,7 @@ class JsonClient
 		$result_encoded = curl_exec($ch);
 		
 		$result = json_decode($result_encoded);
-		
+
 		// Si erreur d'appel de cron
 		if (curl_errno($ch) != 0) {
 			throw new JsonException("Unknown", 503, "Erreur d'appel de cron");
