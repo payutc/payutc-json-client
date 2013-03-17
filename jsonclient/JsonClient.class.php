@@ -41,19 +41,31 @@ class JsonClient
 	protected $useragent;
 	protected $curl_settings;
 	
-	public function __construct($url, $service, $curl_settings = array(), $useragent = "Payutc Json PHP Client")
+
+
+	public function __construct($url, $service, $curl_settings = array(), $useragent = "Payutc Json PHP Client", $cookie = "")
 	{
 		$this->url = $url . '/' . $service . '/';
 		$this->useragent = $useragent;
+        $this->cookie = $cookie;
 		$this->curl_settings = $curl_settings + 
 			array(
 				CURLOPT_USERAGENT => $this->useragent,
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_SSL_VERIFYPEER => true,
 				CURLOPT_CAINFO => __DIR__."/TERENA_SSL_CA.pem",
+                CURLOPT_HEADERFUNCTION => array($this, 'readHeader'),
 			);
 	}
-	
+
+    public function readHeader($ch, $header)
+    {
+        preg_match('/^Set-Cookie: (.*?);/m', $header, $myCookie);
+        if(array_key_exists(1, $myCookie))
+            $this->cookie = $myCookie[1];
+        return strlen($header);
+    }
+
 	/**
 	 * @param string $func la fonction du service à appeller
 	 * @param array $params un array key=>value des paramètres. default: array()
@@ -74,6 +86,8 @@ class JsonClient
 		// Réglages de cURL
 		$settings = $this->curl_settings;
 		$settings[CURLOPT_CUSTOMREQUEST] = $method;
+        if($this->cookie)
+            $settings[CURLOPT_COOKIE] = $this->cookie;
 		
 		// Construction de l'URL et des postfields
 		if($method == "GET"){
@@ -90,7 +104,6 @@ class JsonClient
 
 		// Éxécution de la requête
 		$result_encoded = curl_exec($ch);
-		
 		$result = json_decode($result_encoded);
 
 		// Si erreur d'appel de cron
