@@ -106,9 +106,9 @@ class JsonClient
 		$result_encoded = curl_exec($ch);
 		$result = json_decode($result_encoded);
 
-		// Si erreur d'appel de cron
+		// Si erreur d'appel de cURL
 		if (curl_errno($ch) != 0) {
-			throw new JsonException("Unknown", 503, "Erreur d'appel de cron");
+			throw new JsonException("Unknown", 503, "Erreur d'appel de cURL");
 		}
 		// Si erreur on throw une exception
 		if (isset($result->error)) {
@@ -117,9 +117,9 @@ class JsonClient
 			$code = isset($err->code) ? $err->code : "42";
 			$message = isset($err->message) ? $err->message : "";
 			throw new JsonException($type, $code, $message, curl_getinfo($ch, CURLINFO_HTTP_CODE));
-		}
-		// Sinon, on renvoie le résultat
-		else {
+		} else if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
+			throw new JsonException("InvalidHTTPCode", 37, "La page n'a pas renvoye un code 200.", curl_getinfo($ch, CURLINFO_HTTP_CODE));
+		} else { // Sinon, on renvoie le résultat
 			return $result;
 		}
 	}
