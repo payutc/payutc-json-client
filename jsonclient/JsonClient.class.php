@@ -40,6 +40,7 @@ class JsonClient
 	protected $url;
 	protected $useragent;
 	protected $curl_settings;
+    protected $result_encoded;
 	
 
 
@@ -63,6 +64,11 @@ class JsonClient
         if(array_key_exists(1, $myCookie))
             $this->cookie = $myCookie[1];
         return strlen($header);
+    }
+
+    public function getRawContent()
+    {
+        return $this->result_encoded;
     }
 
 	/**
@@ -102,8 +108,8 @@ class JsonClient
 		curl_setopt_array($ch, $settings);
 
 		// Éxécution de la requête
-		$result_encoded = curl_exec($ch);
-		$result = json_decode($result_encoded);
+		$this->result_encoded = curl_exec($ch);
+		$result = json_decode($this->result_encoded);
 
 		// Si erreur d'appel de cURL
 		if (curl_errno($ch) != 0) {
