@@ -53,7 +53,6 @@ class JsonClient
 				CURLOPT_USERAGENT => $this->useragent,
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_SSL_VERIFYPEER => true,
-				CURLOPT_CAINFO => __DIR__."/TERENA_SSL_CA.pem",
                 CURLOPT_HEADERFUNCTION => array($this, 'readHeader'),
 			);
 	}
